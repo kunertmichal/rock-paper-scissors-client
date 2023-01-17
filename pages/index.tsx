@@ -1,27 +1,32 @@
-import axios from 'axios';
-import {useEffect} from 'react';
-import {io} from 'socket.io-client';
+import React from 'react';
+import {useRouter} from 'next/router';
+import {socket} from '../shared';
 
 export default function Home() {
-  function handleClick() {
-    // call API to create a room
-    // redirect to room
+  const router = useRouter();
+
+  React.useEffect(() => {
+    socket.connect();
+  });
+
+  async function handleClick() {
+    await socket.emit('game:create', {
+      clientId: socket.id,
+    });
+    socket.on('game:created', (data) => {
+      router.push(`/games/${data.gameId}`);
+    });
   }
 
   return (
     <div>
       <h1 className="text-xl font-bold">Rock, paper, scissors</h1>
-      <label className="block">Number of rounds:</label>
-      <select className="p-3 rounded-xl border-2 border-gray-100">
-        <option>1</option>
-        <option>3</option>
-        <option>5</option>
-        <option>7</option>
-        <option>9</option>
-      </select>
-      <button className="bg-gray-100 py-3 px-6 rounded-xl">
+      <button
+        className="bg-gray-100 py-3 px-6 rounded-xl"
+        onClick={handleClick}
+      >
         Get started <span className="text-blue-500">👉</span>
       </button>
     </div>
-  )
+  );
 }
